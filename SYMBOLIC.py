@@ -22,7 +22,7 @@ def Rotation_RPY_4x4(RPY):
 
 def TransformationMatrix_Inverse(TransformationMatrix):
     R_matrix = TransformationMatrix[:3, :3]
-    p_vector = TransformationMatrix[3, :3].reshape(3, 1)
+    p_vector = TransformationMatrix[:3, 3].reshape(3, 1)
     return R_matrix.T.row_join(-R_matrix.T @ p_vector).col_join(
         p.Matrix([[0, 0, 0, 1]])
     )
@@ -111,5 +111,16 @@ def MatlabCode(Matrix):
                 Code = f"{Code} {p.octave_code(Mat[i, j])}"
             else:
                 Code = f"{Code}, {p.octave_code(Mat[i, j])}"
-        Code = f"{Code}\n   " if i == Mat.shape[0]-1 else f"{Code};\n   "
+        Code = f"{Code}\n   " if i == Mat.shape[0] - 1 else f"{Code};\n   "
     return f"[\n    {Code[1:-2]}   ]"
+
+
+def KMatrix_3x6(Omega):
+    omega_x, omega_y, omega_z = Omega[0, 0], Omega[1, 0], Omega[2, 0]
+    return p.Matrix(
+        [
+            [omega_x, -omega_y, -omega_z, 0, 0, 0],
+            [0, -omega_x, 0, omega_y, -omega_z, 0],
+            [0, 0, -omega_x, 0, -omega_y, omega_z],
+        ]
+    )
