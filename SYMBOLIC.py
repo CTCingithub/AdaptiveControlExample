@@ -124,3 +124,29 @@ def KMatrix_3x6(Omega):
             [0, 0, -omega_x, 0, -omega_y, omega_z],
         ]
     )
+
+
+def Ttilde_10x1(SpatialVelocity, TransformationMat):
+    return (
+        (SpatialVelocity[:3, :].T / 2 @ KMatrix_3x6(SpatialVelocity[:3, :]))
+        .row_join(
+            SpatialVelocity[3:, :].T
+            @ Vector2Matrix_3x3(SpatialVelocity[:3, :])
+            @ TransformationMat[:3, :3]
+        )
+        .row_join(SpatialVelocity[3:, :].T / 2 @ SpatialVelocity[3:, :])
+    ).T
+
+
+def Vtilde_10x1(rVec, gVec, TransformationMat):
+    return (
+        p.zeros(1, 6)
+        .row_join(-gVec.T @ TransformationMat[:3, :3])
+        .row_join(-gVec.T @ rVec)
+    ).T
+
+
+def VecDiff(Vec1, Vec2):
+    VecA = Vec1.reshape(len(Vec1), 1)
+    VecB = Vec2.reshape(len(Vec2), 1)
+    return VecA.jacobian(VecB).reshape(len(Vec2), len(Vec1))
