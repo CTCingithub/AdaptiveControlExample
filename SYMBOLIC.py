@@ -108,11 +108,11 @@ def MatlabCode(Matrix):
     for i in range(Mat.shape[0]):
         for j in range(Mat.shape[1]):
             if j == 0:
-                Code = f"{Code} {p.octave_code(Mat[i, j])}"
+                Code = f"{Code}     {p.octave_code(Mat[i, j])}"
             else:
                 Code = f"{Code}, {p.octave_code(Mat[i, j])}"
-        Code = f"{Code}\n   " if i == Mat.shape[0] - 1 else f"{Code};\n   "
-    return f"[\n    {Code[1:-2]}   ]"
+        Code = f"{Code}\n    " if i == Mat.shape[0] - 1 else f"{Code};\n   "
+    return f"[\n    {Code[1:-2]}      ]"
 
 
 def KMatrix_3x6(Omega):
@@ -161,6 +161,6 @@ def CreateMatlabFunction(FunName, Fun, Variables):
     FileName = f"{FunName}.m"
     with open(FileName, "w") as File:
         File.write(f"function {FunName} = {FunName}({VariablesGen(Variables)}" + ")\n")
-        File.write(f"{FunName} = ")
+        File.write(f"    {FunName} = ")
         File.write(MatlabCode(Fun))
-        File.write("\nend\n")
+        File.write(";\nend\n")
