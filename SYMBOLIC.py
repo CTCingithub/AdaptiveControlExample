@@ -150,3 +150,17 @@ def VecDiff(Vec1, Vec2):
     VecA = Vec1.reshape(len(Vec1), 1)
     VecB = Vec2.reshape(len(Vec2), 1)
     return VecA.jacobian(VecB).reshape(len(Vec2), len(Vec1))
+
+
+def VariablesGen(Variables):
+    Code = "".join(f"{p.octave_code(i)}, " for i in Variables)
+    return Code[:-2]
+
+
+def CreateMatlabFunction(FunName, Fun, Variables):
+    FileName = f"{FunName}.m"
+    with open(FileName, "w") as File:
+        File.write(f"function {FunName} = {FunName}({VariablesGen(Variables)}" + ")\n")
+        File.write(f"{FunName} = ")
+        File.write(MatlabCode(Fun))
+        File.write("\nend\n")
