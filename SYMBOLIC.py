@@ -160,7 +160,9 @@ def VariablesGen(Variables):
 def CreateMatlabFunction(FunName, Fun, Variables):
     FileName = f"{FunName}.m"
     with open(FileName, "w") as File:
-        File.write(f"function {FunName} = {FunName}({VariablesGen(Variables)}" + ")\n")
+        File.write(f"function {FunName} = {FunName}(States)\n")
+        File.write("    StateCell = num2cell(States);\n")
+        File.write(f"    [{VariablesGen(Variables)}]" + " = deal(StateCell{:});\n")
         File.write(f"    {FunName} = ")
         File.write(MatlabCode(Fun))
         File.write(";\nend\n")
