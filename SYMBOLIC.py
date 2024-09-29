@@ -119,9 +119,9 @@ def KMatrix_3x6(Omega):
     omega_x, omega_y, omega_z = Omega[0, 0], Omega[1, 0], Omega[2, 0]
     return p.Matrix(
         [
-            [omega_x, -omega_y, -omega_z, 0, 0, 0],
-            [0, -omega_x, 0, omega_y, -omega_z, 0],
-            [0, 0, -omega_x, 0, -omega_y, omega_z],
+            [omega_x, omega_y, omega_z, 0, 0, 0],
+            [0, omega_x, 0, omega_y, omega_z, 0],
+            [0, 0, omega_x, 0, omega_y, omega_z],
         ]
     )
 
@@ -157,8 +157,8 @@ def VariablesGen(Variables):
     return Code[:-2]
 
 
-def CreateMatlabFunction(FunName, Fun, Variables):
-    FileName = f"{FunName}.m"
+def CreateMatlabFunction(FunNameWithPath, FunName, Fun, Variables):
+    FileName = f"{FunNameWithPath}.m"
     with open(FileName, "w") as File:
         File.write(f"function {FunName} = {FunName}(States)\n")
         File.write("    StateCell = num2cell(States);\n")
