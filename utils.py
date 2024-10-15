@@ -52,6 +52,7 @@ def TRAIN_WITH_PROGRESS_BAR(
     LOSS_WEIGHTS=None,
     DEVICE=0,
     GRAD_MAX=5,
+    LOSS_SWITCH_VALUE=5,
 ):
     if LOSS_WEIGHTS is None:
         LOSS_WEIGHTS = [1, 1e-4]
@@ -84,6 +85,8 @@ def TRAIN_WITH_PROGRESS_BAR(
         LOSS_TRAIN_2 = torch.tensor(0.0)
         LOSS_VALIDATION_1 = torch.tensor(0.0)
         LOSS_VALIDATION_2 = torch.tensor(0.0)
+        LOSS_TRAIN_AVERAGE_1 = torch.tensor(0.0)
+        LOSS_TRAIN_AVERAGE_2 = torch.tensor(0.0)
 
         # Gradient descent
         with tqdm(
@@ -100,7 +103,10 @@ def TRAIN_WITH_PROGRESS_BAR(
 
                 # Backward propagation
                 OPTIMIZER.zero_grad()
-                loss_1.backward()
+                if LOSS_TRAIN_AVERAGE_2 < LOSS_SWITCH_VALUE:
+                    loss_2.backward()
+                else:
+                    loss_1.backward()
 
                 # Gradient clipping
                 clip_grad_norm_(MODEL.parameters(), GRAD_MAX)
