@@ -1,4 +1,5 @@
 import torch
+import warnings
 import torch.nn as nn
 from torch.linalg import pinv
 from torch.nn.utils import clip_grad_norm_
@@ -52,12 +53,21 @@ def TRAIN_WITH_PROGRESS_BAR(
     LOSS_WEIGHTS=None,
     DEVICE=0,
     GRAD_MAX=5,
-    LOSS_SWITCH_VALUE=5,
+    LOSS_SWITCH_VALUE=None,
+    FREEZE_EPOCH=None,
+    FREEZE_LAYER=None,
 ):
     if LOSS_WEIGHTS is None:
         LOSS_WEIGHTS = [1, 1e-4]
     if LOSS_TUPLE is None:
         LOSS_TUPLE = [nn.MSELoss(), nn.MSELoss()]
+    if LOSS_SWITCH_VALUE is None:
+        LOSS_SWITCH_VALUE = 5
+    if FREEZE_LAYER is None:
+        if FREEZE_EPOCH is None:
+            FREEZE_EPOCH = int(0.8 * NUM_EPOCHS)
+        else:
+            warnings.warn("NO FREEZE_LAYER!!!")
     print("PyTorch Version:", torch.__version__)
     device = GET_DEVICE(DEVICE)
     print("Training on", device)
@@ -67,20 +77,58 @@ def TRAIN_WITH_PROGRESS_BAR(
     # Transfer model to selected device
     MODEL.to(device)
 
-    # loss for training and validation
+    # Loss for training and validation
     LOSS_1, LOSS_2 = LOSS_TUPLE
 
-    # loss recorders
+    # Loss recorders
     training_losses_1 = []
     training_losses_2 = []
     validation_losses_1 = []
     validation_losses_2 = []
 
+    # Loss when not trained
+    MODEL.eval()
+    # Initialize loss sum
+    LOSS_TRAIN_1 = torch.tensor(0.0)
+    LOSS_TRAIN_2 = torch.tensor(0.0)
+    LOSS_VALIDATION_1 = torch.tensor(0.0)
+    LOSS_VALIDATION_2 = torch.tensor(0.0)
+    with torch.no_grad():
+        for x, y in TRAIN_LOADER:
+            x, y = x.to(device), y.to(device)
+            output = MODEL(x)
+            loss_1 = LOSS_WEIGHTS[0] * LOSS_1(output, y) + LOSS_WEIGHTS[1] * LOSS_2(
+                x, y
+            )
+            loss_2 = LOSS_1(output, y)
+            LOSS_TRAIN_1 += loss_1.item()
+            LOSS_TRAIN_2 += loss_2.item()
+
+        LOSS_TRAIN_AVERAGE_1 = LOSS_TRAIN_1 / len(TRAIN_LOADER)
+        LOSS_TRAIN_AVERAGE_2 = LOSS_TRAIN_2 / len(TRAIN_LOADER)
+        training_losses_1.append(LOSS_TRAIN_AVERAGE_1)
+        training_losses_2.append(LOSS_TRAIN_AVERAGE_2)
+
+        for x, y in VALIDATION_LOADER:
+            x, y = x.to(device), y.to(device)
+            output = MODEL(x)
+            loss_1 = LOSS_WEIGHTS[0] * LOSS_1(output, y) + LOSS_WEIGHTS[1] * LOSS_2(
+                x, y
+            )
+            loss_2 = LOSS_1(output, y)
+            LOSS_VALIDATION_1 += loss_1.item()
+            LOSS_VALIDATION_2 += loss_2.item()
+
+        LOSS_VALIDATION_AVERAGE_1 = LOSS_VALIDATION_1 / len(VALIDATION_LOADER)
+        LOSS_VALIDATION_AVERAGE_2 = LOSS_VALIDATION_2 / len(VALIDATION_LOADER)
+        validation_losses_1.append(LOSS_VALIDATION_AVERAGE_1)
+        validation_losses_2.append(LOSS_VALIDATION_AVERAGE_2)
+
     for epoch in range(NUM_EPOCHS):
         # Switch to train mode
         MODEL.train()
 
-        # Record loss sum in 1 epoch
+        # Record loss sum before gradient descent
         LOSS_TRAIN_1 = torch.tensor(0.0)
         LOSS_TRAIN_2 = torch.tensor(0.0)
         LOSS_VALIDATION_1 = torch.tensor(0.0)
@@ -104,8 +152,14 @@ def TRAIN_WITH_PROGRESS_BAR(
                 # Backward propagation
                 OPTIMIZER.zero_grad()
                 if LOSS_TRAIN_AVERAGE_2 < LOSS_SWITCH_VALUE:
+                    # Train with Loss 2 when MODEL is correct enough
                     loss_2.backward()
+                    # Fix parameters of specified layer
+                    if epoch >= FREEZE_EPOCH and FREEZE_LAYER is not None:
+                        for param in FREEZE_LAYER.parameters():
+                            param.requires_grad = False
                 else:
+                    # Train with Loss 1 when MODEL is not correct enough
                     loss_1.backward()
 
                 # Gradient clipping
@@ -149,64 +203,3 @@ def TRAIN_WITH_PROGRESS_BAR(
         training_losses_2,
         validation_losses_2,
     )
-
-
-def TRAIN_NO_PROGRESS_BAR(
-    MODEL,
-    NUM_EPOCHS,
-    OPTIMIZER,
-    TRAIN_LOADER,
-    VALIDATION_LOADER,
-    LOSS=nn.MSELoss(),
-    DEVICE=0,
-    GRAD_MAX=5,
-):
-    # Transfer model to selected device
-    device = GET_DEVICE(DEVICE)
-    MODEL.to(device)
-
-    # loss recorders
-    training_losses = []
-    validation_losses = []
-
-    for _ in range(NUM_EPOCHS):
-        # Switch to train mode
-        MODEL.train()
-
-        # Record loss sum in 1 epoch
-        LOSS_TRAIN = torch.tensor(0.0)
-        LOSS_VALIDATION = torch.tensor(0.0)
-
-        # Gradient descent
-        for x, y in TRAIN_LOADER:
-            # Forward propagation
-            x, y = x.to(device), y.to(device)
-            output = MODEL(x)
-            loss = LOSS(output, y)
-
-            # Backward propagation
-            OPTIMIZER.zero_grad()
-            loss.backward()
-
-            # Gradient clipping
-            clip_grad_norm_(MODEL.parameters(), GRAD_MAX)
-
-            OPTIMIZER.step()
-            LOSS_TRAIN += loss.item()
-
-        LOSS_TRAIN_AVERAGE = LOSS_TRAIN / len(TRAIN_LOADER)
-        training_losses.append(LOSS_TRAIN_AVERAGE)
-
-        # Model evaluation
-        MODEL.eval()
-        with torch.no_grad():
-            for x, y in VALIDATION_LOADER:
-                x, y = x.to(device), y.to(device)
-                output = MODEL(x)
-                loss = LOSS(output, y)
-                LOSS_VALIDATION += loss.item()
-
-        LOSS_VALIDATION_AVERAGE = LOSS_VALIDATION / len(VALIDATION_LOADER)
-        validation_losses.append(LOSS_VALIDATION_AVERAGE)
-
-    return training_losses, validation_losses
