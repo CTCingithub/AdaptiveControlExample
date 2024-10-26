@@ -43,7 +43,7 @@ def Split2Loaders(INPUT, OUTPUT, BATCHSIZE, RATIO=0.8, SHUFFLE=True):
     )
 
 
-def TRAIN_WITH_PROGRESS_BAR(
+def TRAIN_WITH_PROGRESS_BAR_TWO_LOSS(
     MODEL,
     NUM_EPOCHS,
     OPTIMIZER,
@@ -203,3 +203,102 @@ def TRAIN_WITH_PROGRESS_BAR(
         training_losses_2,
         validation_losses_2,
     )
+
+
+def TRAIN_WITH_PROGRESS_BAR_ONE_LOSS(
+    MODEL,
+    NUM_EPOCHS,
+    OPTIMIZER,
+    TRAIN_LOADER,
+    VALIDATION_LOADER,
+    LOSS_TYPE=nn.MSELoss(),
+    DEVICE=0,
+    GRAD_MAX=None,
+):
+    print("PyTorch Version:", torch.__version__)
+    device = GET_DEVICE(DEVICE)
+    print("Training on", device)
+    print(
+        "====================================Start training===================================="
+    )
+    # Transfer model to selected device
+    MODEL.to(device)
+
+    # loss recorders
+    train_losses = []
+    validation_losses = []
+
+    # Loss when not trained
+    MODEL.eval()
+    # Initialize loss sum
+    LOSS_TRAIN = torch.tensor(0.0)
+    LOSS_VALIDATION = torch.tensor(0.0)
+    with torch.no_grad():
+        for x, y in TRAIN_LOADER:
+            x, y = x.to(device), y.to(device)
+            output = MODEL(x)
+            loss = LOSS_TYPE(output, y)
+            LOSS_TRAIN += loss.item()
+
+        LOSS_TRAIN_AVERAGE = LOSS_TRAIN / len(TRAIN_LOADER)
+        train_losses.append(LOSS_TRAIN_AVERAGE)
+
+        for x, y in VALIDATION_LOADER:
+            x, y = x.to(device), y.to(device)
+            output = MODEL(x)
+            loss = LOSS_TYPE(output, y)
+            LOSS_VALIDATION += loss.item()
+
+        LOSS_VALIDATION_AVERAGE = LOSS_VALIDATION / len(VALIDATION_LOADER)
+        validation_losses.append(LOSS_VALIDATION_AVERAGE)
+
+    for epoch in range(NUM_EPOCHS):
+        # Switch to train mode
+        MODEL.train()
+
+        # Record loss sum in 1 epoch
+        LOSS_TRAIN = torch.tensor(0.0)
+        LOSS_VALIDATION = torch.tensor(0.0)
+
+        # Gradient descent
+        with tqdm(
+            TRAIN_LOADER, desc=f"Epoch {epoch+1}/{NUM_EPOCHS}", unit="batch"
+        ) as t:
+            for x, y in t:
+                # Forward propagation
+                x, y = x.to(device), y.to(device)
+                output = MODEL(x)
+                loss = LOSS_TYPE(output, y)
+
+                # Backward propagation
+                OPTIMIZER.zero_grad()
+                loss.backward()
+
+                # Gradient clipping
+                if GRAD_MAX is not None:
+                    clip_grad_norm_(MODEL.parameters(), GRAD_MAX)
+
+                OPTIMIZER.step()
+                t.set_postfix(loss=loss.item())
+                LOSS_TRAIN += loss.item()
+
+        LOSS_TRAIN_AVERAGE = LOSS_TRAIN / len(TRAIN_LOADER)
+        train_losses.append(LOSS_TRAIN_AVERAGE)
+
+        # Model evaluation
+        MODEL.eval()
+        with torch.no_grad():
+            for x, y in VALIDATION_LOADER:
+                x, y = x.to(device), y.to(device)
+                output = MODEL(x)
+                loss = LOSS_TYPE(output, y)
+                LOSS_VALIDATION += loss.item()
+
+        LOSS_VALIDATION_AVERAGE = LOSS_VALIDATION / len(VALIDATION_LOADER)
+        validation_losses.append(LOSS_VALIDATION_AVERAGE)
+
+    print(
+        "====================================Finish training====================================\n"
+    )
+
+    return train_losses, validation_losses
