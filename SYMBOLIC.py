@@ -1,4 +1,5 @@
 import sympy as p
+import itertools
 
 
 def Translation_4x4(Displacement):
@@ -149,7 +150,7 @@ def Vtilde_10x1(rVec, gVec, TransformationMat):
 def VecDiff(Vec1, Vec2):
     VecA = Vec1.reshape(len(Vec1), 1)
     VecB = Vec2.reshape(len(Vec2), 1)
-    return VecA.jacobian(VecB).reshape(len(Vec2), len(Vec1))
+    return VecA.jacobian(VecB).T
 
 
 def VariablesGen(Variables):
@@ -166,3 +167,36 @@ def CreateMatlabFunction(FunNameWithPath, FunName, Fun, Variables):
         File.write(f"    {FunName} = ")
         File.write(MatlabCode(Fun))
         File.write(";\nend\n")
+
+
+def RMat2YMat(R, v_vec, a_vec, phi_vec, psi_vec):
+    # * Reshape state vectors
+    V_Vec = v_vec.reshape(R.shape[0], 1)
+    A_Vec = a_vec.reshape(R.shape[0], 1)
+    Phi_Vec = phi_vec.reshape(R.shape[0], 1)
+    Psi_Vec = psi_vec.reshape(R.shape[0], 1)
+
+    # * Initialize Y matrix
+    Y = p.zeros(R.shape[0], R.shape[1])
+    for i, j in itertools.product(range(R.shape[0]), range(R.shape[1])):
+        # ? Row index is i, Column index is j
+        Y[i, j] = R[i, j]
+        # ! Substitue acceleration relevant terms
+        for acceleration_index in range(R.shape[0]):
+            Y[i, j] = Y[i, j].subs(
+                A_Vec[acceleration_index], Psi_Vec[acceleration_index]
+            )
+        # ! Substitue velocity relevant terms
+        for velocity_index_1, velocity_index_2 in itertools.product(
+            range(R.shape[0]), range(R.shape[0])
+        ):
+            Y[i, j] = Y[i, j].subs(
+                V_Vec[velocity_index_1] * V_Vec[velocity_index_2],
+                0.5
+                * (
+                    V_Vec[velocity_index_1] * Phi_Vec[velocity_index_2]
+                    + V_Vec[velocity_index_2] * Phi_Vec[velocity_index_1]
+                ),
+            )
+
+    return Y

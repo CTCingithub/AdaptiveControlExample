@@ -2,7 +2,7 @@
  * @Author: CTC 2801320287@qq.com
  * @Date: 2024-05-20 15:14:31
  * @LastEditors: CTC 2801320287@qq.com
- * @LastEditTime: 2024-09-27 17:07:50
+ * @LastEditTime: 2024-11-10 19:46:41
  * @Description: 
  * 
  * Copyright (c) 2024 by ${git_name_email}, All Rights Reserved. 
@@ -147,11 +147,11 @@ $$
     \vec{\tau} &= \frac{d}{d t} \frac{\partial T}{\partial \dot{\vec{q}}} - \frac{\partial T}{\partial \vec{q}} + \frac{\partial V}{\partial \vec{q}} \\
     &= \left[ \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} \right] \vec{p} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} \vec{p} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}} \vec{p} \\
     &= \left[ \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}} \right] \vec{p} \\
-    & \triangleq Y_{n \times 10 n} \vec{p}_{10 n \times 1}
+    & \triangleq R_{n \times 10 n} \vec{p}_{10 n \times 1}
 \end{aligned}
 $$
 
-The above equation gives a linearized form of manipulator's dynamics. $Y = \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}}$ is the parameter regression matrix and $\vec{p}$ is dynamical parameter vector.
+The above equation gives a linearized form of manipulator's dynamics. $R = \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}}$ is the parameter regression matrix and $\vec{p}$ is dynamical parameter vector.
 
 ## 3. Simplification of Linearized Dynamics
 
@@ -159,32 +159,32 @@ Although we've already obtained
 
 $$
 \begin{gathered}
-    \vec{\tau} = Y \vec{p}, \\
-    Y = \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}} \\
+    \vec{\tau} = R \vec{p}, \\
+    R = \frac{d}{d t} \frac{\partial \tilde{T}^{\top}}{\partial \dot{\vec{q}}} - \frac{\partial \tilde{T}^{\top}}{\partial \vec{q}} + \frac{\partial \tilde{V}^{\top}}{\partial \vec{q}} \\
     \vec{p} = \left[ \left( \vec{p}^{i} \right)^{\top}, \cdots, \left( \vec{p}^{n} \right)^{\top} \right]^{\top},
 \end{gathered}
 $$
 
-zero-valued columns and linearly correlated columns in $Y$ may lower correctness when performing online dynamical parameter estimation. Therefore, further simplification should be done.
+zero-valued columns and linearly correlated columns in $R$ may lower correctness when performing online dynamical parameter estimation. Therefore, further simplification should be done.
 
-1. If the $i$th column of $Y$, denoted as $Y_{i}$, follows
+1. If the $i$th column of $R$, denoted as $R_{i}$, follows
 
    $$
-   Y_{i} \equiv \vec{0}
+   R_{i} \equiv \vec{0}
    $$
 
-Then the corresponding $i$th element in $\vec{p}$ has no influence on dynamics. Therefore, the $i$th column of $Y$ and $i$th element of $\vec{p}$ can be eliminated when $Y_{i} = \vec{0}$ (or $p_{i} = 0$).
+Then the corresponding $i$th element in $\vec{p}$ has no influence on dynamics. Therefore, the $i$th column of $R$ and $i$th element of $\vec{p}$ can be eliminated when $R_{i} = \vec{0}$ (or $p_{i} = 0$).
 
-2. If a certain column of $Y$ is a linear correlation of other columns:
+2. If a certain column of $R$ is a linear correlation of other columns:
 
 $$
-Y_{i} \equiv \beta_{i_{1}} Y_{i_{1}} + \cdots + \beta_{i_{m}} Y_{i_{m}},
+R_{i} \equiv \beta_{i_{1}} R_{i_{1}} + \cdots + \beta_{i_{m}} R_{i_{m}},
 $$
 
 where $\beta_{i_{1}}, \cdots, \beta_{i_{m}} $ are constants. Then it's obvious that
 
 $$
-Y_{i} p_{i} \equiv Y_{i_{1}} \left( \beta_{i_{1}} p_{i_{1}} \right) + \cdots + Y_{i_{m}} \left( \beta_{i_{m}} p_{i_{m}} \right)
+R_{i} p_{i} \equiv R_{i_{1}} \left( \beta_{i_{1}} p_{i_{1}} \right) + \cdots + R_{i_{m}} \left( \beta_{i_{m}} p_{i_{m}} \right)
 $$
 
 Then we may set
@@ -194,3 +194,25 @@ p_{i_{j}} \rightarrow p_{i_{j}} + \beta_{i_{j}} p_{i},
 $$
 
 and $p_{i} \rightarrow 0 $.
+
+## 4. Substitution with $\vec{\psi}$ and $\vec{\phi}$
+
+In former 3 sections, we managed to obtain a linearized form of serial manipulator's dynamic:
+
+$$
+M \left( \vec{q} \right) \ddot{\vec{q}} + C \left( \vec{q}, \vec{\dot{q}} \right) \dot{\vec{q}} + G \left( \vec{q} \right) = R \left( \vec{q}, \dot{\vec{q}}, \ddot{\vec{q}} \right) \vec{p},
+$$
+
+where
+
+$$
+\begin{aligned}
+    M \left( \vec{q} \right) \ddot{\vec{q}} &= \frac{d}{d t} \frac{\partial T}{\partial \vec{\dot{q}}}, \\
+    \sum_{j =1}^{n} C_{ij} \left( \vec{q}, \dot{\vec{q}} \right) \dot{q}_{j} &= \sum_{j =1}^{n} \left[ \sum_{k = 1}^{n} \frac{\dot{q}_{k}}{2} \left( \frac{\partial M_{ik}}{\partial q_{j}} + \frac{\partial M_{ij}}{\partial q_{k}} - \frac{\partial M_{jk}}{\partial q_{i}} \right) \right] \dot{q}_{j}.
+\end{aligned}
+$$
+
+We have the following conclusions:
+
+1. Acceleration $\ddot{q}_{i}$s appear individually. We may simplily substitute $\ddot{q}_{i}$ with $\psi_{i}$.
+2. Velocity $\dot{q}_{i}$s appear in the form of $\dot{q}_{i} \dot{q}_{j}$, which indicates that we should substitute $\dot{q}_{i} \dot{q}_{j}$ with $\frac{1}{2} \left( \dot{q}_{i} \phi_{j} + \dot{q}_{j} \phi_{i} \right)$, in order to guarantee symmetry of inertial and Coriolis force related terms.

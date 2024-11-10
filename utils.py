@@ -32,15 +32,35 @@ def INIT_WEIGHTS_ZERO(MODEL):
         nn.init.zeros_(param)
 
 
-def Split2Loaders(INPUT, OUTPUT, BATCHSIZE, RATIO=0.8, SHUFFLE=True):
-    training_size = int(RATIO * INPUT.shape[0])
-    validation_size = INPUT.shape[0] - training_size
-    training_dataset, validation_dataset = random_split(
-        TensorDataset(INPUT, OUTPUT), [training_size, validation_size]
-    )
-    return DataLoader(training_dataset, BATCHSIZE, SHUFFLE), DataLoader(
-        validation_dataset, BATCHSIZE, SHUFFLE
-    )
+def Split2Loaders(INPUT, OUTPUT, BATCHSIZE, RATIO=None, SHUFFLE=True):
+    if RATIO is None:
+        RATIO = [6, 4]
+    if len(RATIO) == 2:
+        train_ratio = RATIO[0] / (RATIO[0] + RATIO[1])
+        training_size = int(train_ratio * INPUT.shape[0])
+        validation_size = INPUT.shape[0] - training_size
+        training_dataset, validation_dataset = random_split(
+            TensorDataset(INPUT, OUTPUT), [training_size, validation_size]
+        )
+        return DataLoader(training_dataset, BATCHSIZE, SHUFFLE), DataLoader(
+            validation_dataset, BATCHSIZE, SHUFFLE
+        )
+    elif len(RATIO) == 3:
+        training_ratio = RATIO[0] / (RATIO[0] + RATIO[1] + RATIO[2])
+        validation_ratio = RATIO[1] / (RATIO[0] + RATIO[1] + RATIO[2])
+        training_size = int(training_ratio * INPUT.shape[0])
+        validation_size = int(validation_ratio * INPUT.shape[0])
+        test_size = INPUT.shape[0] - training_size - validation_size
+        training_dataset, validation_dataset, test_dataset = random_split(
+            TensorDataset(INPUT, OUTPUT), [training_size, validation_size, test_size]
+        )
+        return (
+            DataLoader(training_dataset, BATCHSIZE, SHUFFLE),
+            DataLoader(validation_dataset, BATCHSIZE, SHUFFLE),
+            DataLoader(test_dataset, BATCHSIZE, SHUFFLE),
+        )
+    else:
+        raise ValueError("RATIO must be a list of length 2 or 3")
 
 
 def TRAIN_WITH_PROGRESS_BAR_TWO_LOSS(
@@ -51,16 +71,20 @@ def TRAIN_WITH_PROGRESS_BAR_TWO_LOSS(
     VALIDATION_LOADER,
     LOSS_TUPLE=None,
     LOSS_WEIGHTS=None,
-    DEVICE=0,
-    GRAD_MAX=5,
+    DEVICE=None,
+    GRAD_MAX=None,
     LOSS_SWITCH_VALUE=None,
     FREEZE_EPOCH=None,
     FREEZE_LAYER=None,
 ):
-    if LOSS_WEIGHTS is None:
-        LOSS_WEIGHTS = [1, 1e-4]
     if LOSS_TUPLE is None:
         LOSS_TUPLE = [nn.MSELoss(), nn.MSELoss()]
+    if LOSS_WEIGHTS is None:
+        LOSS_WEIGHTS = [1, 1e-4]
+    if DEVICE is None:
+        DEVICE = 0
+    if GRAD_MAX is None:
+        GRAD_MAX = 5
     if LOSS_SWITCH_VALUE is None:
         LOSS_SWITCH_VALUE = 5
     if FREEZE_LAYER is None:
