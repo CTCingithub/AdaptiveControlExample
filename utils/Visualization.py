@@ -110,7 +110,6 @@ def LOSS_EPOCH_DIAGRAM_TWO_LOSS(LOSS_HISTORY_TUPLE, CONFIG, LAYER_NAME=None):
 
 def LOSS_EPOCH_DIAGRAM_ONE_LOSS(LOSS_HISTORY_TUPLE, CONFIG):
     fig, ax = plt.subplots()
-    LOSS_Training_History, LOSS_Validation_History = LOSS_HISTORY_TUPLE
 
     # Load config
     NUM_EPOCHS = CONFIG["TRAIN"]["NUM_EPOCHS"]
@@ -189,9 +188,11 @@ def VISUALIZE_NN(NN, CONFIG):
         NUM_ROW = CONFIG["NUM_ROW"]
         NUM_COL = CONFIG["NUM_COL"]
     INPUT_SHAPE = NN[0].weight.shape[1]
-    fig, ax = plt.subplots(
-        NUM_ROW, NUM_COL, figsize=CONFIG["FIG_SIZE"], dpi=CONFIG["DPI"]
-    )
+    FIG_SIZE = CONFIG["FIG_SIZE"]
+    if FIG_SIZE[0] == -1 or FIG_SIZE[1] == -1:
+        fig, ax = plt.subplots(NUM_ROW, NUM_COL, dpi=CONFIG["DPI"])
+    else:
+        fig, ax = plt.subplots(NUM_ROW, NUM_COL, figsize=FIG_SIZE, dpi=CONFIG["DPI"])
     if NUM_ROW == 1 or NUM_COL == 1:
         for i in range(NUM_LAYERS):
             data_temp = NN[i].weight.detach().to("cpu").numpy()
@@ -205,13 +206,13 @@ def VISUALIZE_NN(NN, CONFIG):
         for i in range(NUM_LAYERS):
             data_temp = NN[i].weight.detach().to("cpu").numpy()
             VISUALIZE_MATRIX_AX(
-                ax[i // NUM_ROW, i % NUM_ROW], data_temp, CONFIG, f"Layer {i+1}"
+                ax[i // NUM_COL, i % NUM_COL], data_temp, CONFIG, f"Layer {i+1}"
             )
             if i == 0:
-                ax[i // NUM_ROW, i % NUM_ROW].set_xticks(
+                ax[i // NUM_COL, i % NUM_COL].set_xticks(
                     int(INPUT_SHAPE / 4) * np.arange(1, 5)
                 )
-                ax[i // NUM_ROW, i % NUM_ROW].set_xticklabels(
+                ax[i // NUM_COL, i % NUM_COL].set_xticklabels(
                     [r"$r_i$", r"$v_i$", r"$\phi_{i}$", r"$\psi_{i}$"]
                 )
     plt.tight_layout()

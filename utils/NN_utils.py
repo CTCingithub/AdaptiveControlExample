@@ -336,7 +336,7 @@ def TRAIN_WITH_PROGRESS_BAR_ONE_LOSS(
         ) as t:
             for x, y in t:
                 # Forward propagation
-                # x, y = x.to(device), y.to(device)
+                x, y = x.to(DEVICE), y.to(DEVICE)
                 output = MODEL(x)
                 loss = LOSS_TYPE(output, y)
 
