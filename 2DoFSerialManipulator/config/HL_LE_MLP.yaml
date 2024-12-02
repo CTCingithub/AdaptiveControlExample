@@ -12,14 +12,14 @@ NETWORK:
   INPUT_SIZE: 8
   OUTPUT_SIZE: 14
   EMBEDDING_SIZE: 8
-  HIDDEN_SIZE: [ 16, 32, 32 ]
+  HIDDEN_SIZE: [ 16, 32 ]
 
 # Training settings
 TRAIN:
   INIT: Kaiming # False, Zero, Xavier, Kaiming
   LEARNING_RATE: 0.001
   WEIGHT_DECAY: 0.0
-  NUM_EPOCHS: 50
+  NUM_EPOCHS: 10
   DEVICE: -1 # -1 for CPU
   LOSS_WEIGHTS: [ 1, 0.01 ]
   GRAD_MAX: 1

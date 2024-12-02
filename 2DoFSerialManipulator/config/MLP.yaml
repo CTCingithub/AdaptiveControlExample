@@ -30,12 +30,6 @@ VISUALIZATION:
     X_SEGMENT: 10
     Y_SCALE: log # linear, log, symlog, logit
     LINE_WIDTH: 2 # default: 1.5
-  SHORTCUT_WEIGHT:
-    COLOR_MAP: seismic
-    TITLE_FONTSIZE: 20
-  LINEAR_MAPPING_WEIGHT:
-    COLOR_MAP: seismic
-    TITLE_FONTSIZE: 20
   NN_WEIGHT:
     NUM_ROW: 1 # -1 for default
     NUM_COL: 4 # -1 for default

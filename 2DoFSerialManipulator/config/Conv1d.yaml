@@ -11,8 +11,7 @@ DATA_LOADER:
 NETWORK:
   INPUT_SIZE: 8
   OUTPUT_SIZE: 14
-  EMBEDDING_SIZE: 8
-  HIDDEN_SIZE: [ 16, 32, 32 ]
+  # HIDDEN_SIZE: [ 16, 32, 32 ]
 
 # Training settings
 TRAIN:
@@ -21,12 +20,7 @@ TRAIN:
   WEIGHT_DECAY: 0.0
   NUM_EPOCHS: 50
   DEVICE: -1 # -1 for CPU
-  LOSS_WEIGHTS: [ 1, 0.01 ]
   GRAD_MAX: 1
-  LOSS_SWITCH_VALUE: 1
-  FREEZE_EPOCH: [ 30 ]
-  TOL_RATIO: [ 0.05 ]
-  FILTER_WEIGHTS: [ True ]
 
 # Visualization settings
 VISUALIZATION:
@@ -36,9 +30,6 @@ VISUALIZATION:
     X_SEGMENT: 10
     Y_SCALE: log # linear, log, symlog, logit
     LINE_WIDTH: 2 # default: 1.5
-  LINEAR_MAPPING_WEIGHT:
-    COLOR_MAP: seismic
-    TITLE_FONTSIZE: 20
   NN_WEIGHT:
     NUM_ROW: 1 # -1 for default
     NUM_COL: 4 # -1 for default
