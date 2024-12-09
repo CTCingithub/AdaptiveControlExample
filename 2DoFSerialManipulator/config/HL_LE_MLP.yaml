@@ -3,7 +3,7 @@ DATA_LOADER:
   INPUT_DATA_PATH: Data/KinematicsData.mat
   OUTPUT_DATA_PATH: Data/DynRegVecData.mat
   BATCH_SIZE: 16
-  SPLIT_RATIO: [ 6, 2, 2 ]
+  SPLIT_RATIO: [6, 2, 2]
   SHUFFLE: True
   PIN_MEMORY: True
 
@@ -12,21 +12,21 @@ NETWORK:
   INPUT_SIZE: 8
   OUTPUT_SIZE: 14
   EMBEDDING_SIZE: 8
-  HIDDEN_SIZE: [ 16, 32 ]
+  HIDDEN_SIZE: [16, 32, 32]
 
 # Training settings
 TRAIN:
   INIT: Kaiming # False, Zero, Xavier, Kaiming
   LEARNING_RATE: 0.001
   WEIGHT_DECAY: 0.0
-  NUM_EPOCHS: 10
+  NUM_EPOCHS: 50
   DEVICE: -1 # -1 for CPU
-  LOSS_WEIGHTS: [ 1, 0.01 ]
+  LOSS_WEIGHTS: [1, 0.01]
   GRAD_MAX: 1
   LOSS_SWITCH_VALUE: 1
-  FREEZE_EPOCH: [ 30 ]
-  TOL_RATIO: [ 0.05 ]
-  FILTER_WEIGHTS: [ True ]
+  FREEZE_EPOCH: [30]
+  TOL_RATIO: [0.05]
+  FILTER_WEIGHTS: [True]
 
 # Visualization settings
 VISUALIZATION:
@@ -42,7 +42,7 @@ VISUALIZATION:
   NN_WEIGHT:
     NUM_ROW: 1 # -1 for default
     NUM_COL: 4 # -1 for default
-    FIG_SIZE: [ 13, 3 ]
+    FIG_SIZE: [13, 3]
     DPI: 100
     COLOR_MAP: seismic
     TITLE_FONTSIZE: 15
