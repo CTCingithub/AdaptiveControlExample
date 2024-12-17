@@ -199,8 +199,8 @@ def TRAIN_WITH_PROGRESS_BAR_TWO_LOSS(
         MODEL.train()
 
         # Record loss sum before gradient descent
-        LOSS_TRAIN_1 = torch.tensor(0.0)
-        LOSS_TRAIN_2 = torch.tensor(0.0)
+        LOSS_TRAIN_1 = 0
+        LOSS_TRAIN_2 = 0
 
         # Gradient descent
         with tqdm(
@@ -327,8 +327,7 @@ def TRAIN_WITH_PROGRESS_BAR_ONE_LOSS(
         MODEL.train()
 
         # Record loss sum in 1 epoch
-        LOSS_TRAIN = torch.tensor(0.0)
-        LOSS_VALIDATION = torch.tensor(0.0)
+        LOSS_TRAIN = 0
 
         # Gradient descent
         with tqdm(
