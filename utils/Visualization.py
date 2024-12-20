@@ -200,7 +200,7 @@ def VISUALIZE_NN(NN, CONFIG):
             if i == 0:
                 ax[i].set_xticks(int(INPUT_SHAPE / 4) * np.arange(1, 5))
                 ax[i].set_xticklabels(
-                    [r"$r_i$", r"$v_i$", r"$\phi_{i}$", r"$\psi_{i}$"]
+                    [r"$q_{i}$", r"$\dot{q}_{i}$", r"$\phi_{i}$", r"$\psi_{i}$"]
                 )
     else:
         for i in range(NUM_LAYERS):
@@ -213,7 +213,7 @@ def VISUALIZE_NN(NN, CONFIG):
                     int(INPUT_SHAPE / 4) * np.arange(1, 5)
                 )
                 ax[i // NUM_COL, i % NUM_COL].set_xticklabels(
-                    [r"$r_i$", r"$v_i$", r"$\phi_{i}$", r"$\psi_{i}$"]
+                    [r"$q_{i}$", r"$\dot{q}_{i}$", r"$\phi_{i}$", r"$\psi_{i}$"]
                 )
     plt.tight_layout()
     return fig

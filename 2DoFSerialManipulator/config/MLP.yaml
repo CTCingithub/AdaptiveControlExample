@@ -11,7 +11,7 @@ DATA_LOADER:
 NETWORK:
   INPUT_SIZE: 8
   OUTPUT_SIZE: 14
-  HIDDEN_SIZE: [ 16, 32, 32 ]
+  HIDDEN_SIZE: [ 32, 32, 32 ]
 
 # Training settings
 TRAIN:

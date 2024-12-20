@@ -2,7 +2,7 @@
 DATA_LOADER:
   INPUT_DATA_PATH: Data/KinematicsData.mat
   OUTPUT_DATA_PATH: Data/DynRegVecData.mat
-  BATCH_SIZE: 16
+  BATCH_SIZE: 32
   SPLIT_RATIO: [ 6, 2, 2 ]
   SHUFFLE: True
   PIN_MEMORY: True
@@ -12,7 +12,7 @@ NETWORK:
   INPUT_SIZE: 8
   OUTPUT_SIZE: 14
   EMBEDDING_SIZE: 8
-  HIDDEN_SIZE: [ 16, 32, 32 ]
+  HIDDEN_SIZE: [ 32, 32, 32 ]
 
 # Training settings
 TRAIN:
