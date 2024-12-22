@@ -7,11 +7,7 @@ class ShortcutMapping(nn.Module):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
-
-        if zero_size is None:
-            self.zero_size = input_size // 4 * 3
-        else:
-            self.zero_size = zero_size
+        self.zero_size = input_size // 4 * 3 if zero_size is None else zero_size
         self.NonZero = nn.Linear(
             self.input_size - self.zero_size, self.output_size, bias=False
         )
