@@ -67,7 +67,14 @@ class HadamardProduct(nn.Module):
 
 
 class ResLinear(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size=None, bias=True):
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        hidden_size=None,
+        bias=True,
+        batch_normalization=False,
+    ):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = output_size if hidden_size is None else hidden_size
@@ -75,9 +82,17 @@ class ResLinear(nn.Module):
         self.Linear_1 = nn.Linear(input_size, hidden_size, bias=bias)
         self.Linear_2 = nn.Linear(hidden_size, output_size, bias=bias)
         self.Shortcut = nn.Linear(input_size, output_size, bias=False)
+        if batch_normalization:
+            self.BN = nn.BatchNorm1d(num_features=output_size)
+        else:
+            self.register_parameter("BN", None)
 
     def forward(self, x):
-        return self.Linear_2(torch.relu(self.Linear_1(x))) + self.Shortcut(x)
+        Out = self.Linear_2(torch.relu(self.Linear_1(x))) + self.Shortcut(x)
+        if self.BN is not None:
+            return self.BN(Out)
+        else:
+            return Out
 
     def __repr__(self):
         return f"ResLinear(in_feature={self.input_size}, out_feature={self.output_size}, bias={self.Linear_1.bias is not None})"
