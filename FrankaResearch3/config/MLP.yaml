@@ -1,7 +1,7 @@
 # Load data settings
 DATA_LOADER:
-  INPUT_DATA_PATH: Data/KinematicsData.mat
-  OUTPUT_DATA_PATH: Data/DynRegVecData.mat
+  INPUT_DATA_PATH: Data/Toy_KinematicsData.mat
+  OUTPUT_DATA_PATH: Data/Toy_DynRegVecData.mat
   BATCH_SIZE: 16
   SPLIT_RATIO: [ 6, 2, 2 ]
   SHUFFLE: True
